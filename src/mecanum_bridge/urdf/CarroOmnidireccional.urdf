@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="CarroOmnidireccional">
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="-0.019492 0.00046915 0.022205"
+        rpy="0 0 0" />
+      <mass
+        value="0.57252" />
+      <inertia
+        ixx="0.0007538"
+        ixy="-8.8209E-07"
+        ixz="5.5192E-06"
+        iyy="0.00083909"
+        iyz="4.3297E-07"
+        izz="0.0015598" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://mecanum_bridge/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://mecanum_bridge/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="WheelLeftAhead_Link">
+    <inertial>
+      <origin
+        xyz="3.098E-09 -0.013039 -1.5291E-08"
+        rpy="0 0 0" />
+      <mass
+        value="0.087341" />
+      <inertia
+        ixx="6.9269E-06"
+        ixy="2.8875E-12"
+        ixz="2.8247E-12"
+        iyy="8.3483E-06"
+        iyz="-6.8904E-12"
+        izz="6.9269E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://mecanum_bridge/meshes/WheelLeftAhead_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://mecanum_bridge/meshes/WheelLeftAhead_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="WheelLeftAhead_Joint"
+    type="continuous">
+    <origin
+      xyz="0.048124 0.10947 -0.0235"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="WheelLeftAhead_Link" />
+    <axis
+      xyz="0 1 0" />
+  </joint>
+  <link
+    name="WheelRightAhead_Link">
+    <inertial>
+      <origin
+        xyz="-7.0507E-09 0.013261 -1.8396E-08"
+        rpy="0 0 0" />
+      <mass
+        value="0.087355" />
+      <inertia
+        ixx="6.9291E-06"
+        ixy="2.7499E-12"
+        ixz="-1.1013E-11"
+        iyy="8.3497E-06"
+        iyz="6.9103E-12"
+        izz="6.929E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://mecanum_bridge/meshes/WheelRightAhead_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://mecanum_bridge/meshes/WheelRightAhead_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="WheelRightAhead_Joint"
+    type="continuous">
+    <origin
+      xyz="0.048124 -0.1096 -0.0235"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="WheelRightAhead_Link" />
+    <axis
+      xyz="0 1 0" />
+  </joint>
+  <link
+    name="WheelRightBack_Link">
+    <inertial>
+      <origin
+        xyz="-1.5508E-08 0.013039 1.7088E-09"
+        rpy="0 0 0" />
+      <mass
+        value="0.087341" />
+      <inertia
+        ixx="6.9269E-06"
+        ixy="7.1224E-12"
+        ixz="1.6936E-12"
+        iyy="8.3483E-06"
+        iyz="-2.2554E-12"
+        izz="6.9269E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://mecanum_bridge/meshes/WheelRightBack_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://mecanum_bridge/meshes/WheelRightBack_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="WheelRightBack_Joint"
+    type="continuous">
+    <origin
+      xyz="-0.072876 -0.1096 -0.0235"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="WheelRightBack_Link" />
+    <axis
+      xyz="0 1 0" />
+  </joint>
+  <link
+    name="WheelLeftBack_Link">
+    <inertial>
+      <origin
+        xyz="4.0845E-09 -0.013261 1.9273E-08"
+        rpy="0 0 0" />
+      <mass
+        value="0.087355" />
+      <inertia
+        ixx="6.9291E-06"
+        ixy="1.4493E-12"
+        ixz="-8.6968E-12"
+        iyy="8.3497E-06"
+        iyz="7.2948E-12"
+        izz="6.929E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://mecanum_bridge/meshes/WheelLeftBack_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://mecanum_bridge/meshes/WheelLeftBack_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="WheelLeftBack_Joint"
+    type="continuous">
+    <origin
+      xyz="-0.072876 0.10947 -0.0235"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="WheelLeftBack_Link" />
+    <axis
+      xyz="0 1 0" />
+  </joint>
+  <link
+    name="Lidar_Link">
+    <inertial>
+      <origin
+        xyz="9.7989E-05 4.2046E-05 -0.023376"
+        rpy="0 0 0" />
+      <mass
+        value="0.012032" />
+      <inertia
+        ixx="2.2145E-06"
+        ixy="-3.366E-08"
+        ixz="4.8343E-09"
+        iyy="2.1388E-06"
+        iyz="4.2037E-09"
+        izz="3.8781E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://mecanum_bridge/meshes/Lidar_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://mecanum_bridge/meshes/Lidar_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Lidar_Joint"
+    type="fixed">
+    <origin
+      xyz="0.028724 -9.6761E-05 0.1283"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="Lidar_Link" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="IMU_Link">
+    <inertial>
+      <origin
+        xyz="-9.921E-05 -9.8399E-05 0.00099814"
+        rpy="0 0 0" />
+      <mass
+        value="0.00046281" />
+      <inertia
+        ixx="1.5422E-08"
+        ixy="3.2732E-14"
+        ixz="1.9003E-15"
+        iyy="4.9552E-09"
+        iyz="-2.2747E-13"
+        izz="2.0169E-08" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://mecanum_bridge/meshes/IMU_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://mecanum_bridge/meshes/IMU_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="IMU_Joint"
+    type="fixed">
+    <origin
+      xyz="-0.0025436 -6.6731E-05 0.05207"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="IMU_Link" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+</robot>
