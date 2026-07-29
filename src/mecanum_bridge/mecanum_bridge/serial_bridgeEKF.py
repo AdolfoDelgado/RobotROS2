@@ -103,7 +103,7 @@ class SerialBridge(Node):
         self.tf_broadcaster = TransformBroadcaster(self)
 
         # 100 Hz. En cada llamada se procesan todas las líneas disponibles.
-        self.timer = self.create_timer(0.01, self.read_serial)
+        self.timer = self.create_timer(0.02, self.read_serial)
 
         self.get_logger().info(
             f"Puente serial iniciado en {port} a {baud} baudios; "
