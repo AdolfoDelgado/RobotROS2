@@ -30,12 +30,12 @@ def generate_launch_description():
     )
 
     # RViz
-    rviz_node = launch_ros.actions.Node(
-        package='rviz2',
-        executable='rviz2',
-        name='rviz2',
-        output='screen',
-    )
+    #rviz_node = launch_ros.actions.Node(
+    #    package='rviz2',
+    #    executable='rviz2',
+    #    name='rviz2',
+    #    output='screen',
+    #)
 
     # LiDAR
     lidar_node = launch_ros.actions.Node(
@@ -46,7 +46,7 @@ def generate_launch_description():
         parameters=[
             {'product_name': 'LDLiDAR_LD19'},
             {'topic_name': 'scan'},
-            {'frame_id': 'Lidar_Link'},      # Debe coincidir con tu URDF
+            {'frame_id': 'Lidar_Link'},     
             {'port_name': '/dev/ttyUSB0'},
             {'port_baudrate': 230400},
             {'laser_scan_dir': True},
@@ -58,6 +58,6 @@ def generate_launch_description():
 
     return launch.LaunchDescription([
         robot_state_publisher_node,
-        rviz_node,
+        #rviz_node,
         lidar_node,
     ])

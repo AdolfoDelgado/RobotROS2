@@ -29,7 +29,6 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            #'serial_bridge = mecanum_bridge.serial_bridge:main',
             'serial_bridgeEKF = mecanum_bridge.serial_bridgeEKF:main',
             'joy_mecanum = mecanum_bridge.joy_mecanum:main',
             'teleop_mecanum = mecanum_bridge.teleop_mecanum:main',
