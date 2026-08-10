@@ -29,6 +29,8 @@ setup(
     },
     entry_points={
         'console_scripts': [
+            #'positionXY =mecanum_bridge.positionXY:main ',
+            #'position_controller =mecanum_bridge.position_controller:main ',
             'serial_bridgeEKF = mecanum_bridge.serial_bridgeEKF:main',
             'joy_mecanum = mecanum_bridge.joy_mecanum:main',
             'teleop_mecanum = mecanum_bridge.teleop_mecanum:main',

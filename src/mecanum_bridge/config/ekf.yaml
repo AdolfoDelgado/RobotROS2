@@ -37,7 +37,7 @@ ekf_filter_node:
       false, false, false,
       false, false, true,
       false, false, false,
-      false, false, true,
+      false, false, false,
       false, false, false
     ]
     imu0_queue_size: 10
