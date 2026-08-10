@@ -1,0 +1,77 @@
+slam_toolbox:
+  ros__parameters:
+
+    # ==========================================
+    # FRAMES
+    # ==========================================
+
+    map_frame: map
+    odom_frame: odom
+    base_frame: base_link
+
+    # ==========================================
+    # SENSOR
+    # ==========================================
+
+    scan_topic: /scan
+
+    # ==========================================
+    # MODO DE SLAM
+    # ==========================================
+
+    mode: mapping
+
+    # ==========================================
+    # PUBLICACIÓN
+    # ==========================================
+
+    publish_tf: true
+    transform_publish_period: 0.02
+
+    # ==========================================
+    # MAPA
+    # ==========================================
+
+    resolution: 0.05
+
+    # ==========================================
+    # ACTUALIZACIÓN DEL MAPA
+    # ==========================================
+
+    minimum_time_interval: 0.2
+    minimum_travel_distance: 0.10
+    minimum_travel_heading: 0.10
+
+    # ==========================================
+    # CORRESPONDENCIA DE ESCANEOS
+    # ==========================================
+
+    use_scan_matching: true
+    use_scan_barycenter: true
+
+    # ==========================================
+    # SEARCH / LOOP CLOSURE
+    # ==========================================
+
+    do_loop_closing: true
+
+    loop_search_maximum_distance: 3.0
+    loop_match_minimum_response_coarse: 0.35
+    loop_match_minimum_response_fine: 0.45
+
+    # ==========================================
+    # OPTIMIZACIÓN
+    # ==========================================
+
+    solver_plugin: solver_plugins::CeresSolver
+
+    ceres_linear_solver: SPARSE_NORMAL_CHOLESKY
+    ceres_preconditioner: SCHUR_JACOBI
+    ceres_trust_strategy: LEVENBERG_MARQUARDT
+    ceres_loss_function: None
+
+    # ==========================================
+    # PUBLICACIÓN DEL MAPA
+    # ==========================================
+
+    map_update_interval: 5.0
