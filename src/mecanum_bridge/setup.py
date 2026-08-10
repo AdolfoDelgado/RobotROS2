@@ -34,6 +34,7 @@ setup(
             'serial_bridgeEKF = mecanum_bridge.serial_bridgeEKF:main',
             'joy_mecanum = mecanum_bridge.joy_mecanum:main',
             'teleop_mecanum = mecanum_bridge.teleop_mecanum:main',
+            'trajectory_node = mecanum_bridge.trajectory_node:main',
         ],
     },
 )
