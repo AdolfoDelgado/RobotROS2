@@ -1,0 +1,20 @@
+ssh mecanum@robotpi.local
+
+ros2 run joy joy_node
+
+ros2 run mecanum_bridge joy_mecanum
+
+ros2 launch mecanum_bridge display.launch.py
+
+
+
+
+ros2 run mecanum_bridge serial_bridgeEKF
+
+ros2 launch mecanum_bridge ld500.launch.py 
+
+ros2 run robot_localization ekf_node \
+  --ros-args \
+  --params-file ~/omndireccional_ws/src/RobotROS2/src/mecanum_bridge/config/ekf.yaml
+
+
