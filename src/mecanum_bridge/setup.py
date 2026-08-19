@@ -15,7 +15,7 @@ setup(
         (os.path.join('share',package_name, 'urdf'), glob('urdf/*')),
         (os.path.join('share',package_name, 'launch'), glob('launch/*.py')),
         (os.path.join('share',package_name, 'meshes'), glob('meshes/*')),
-        (os.path.join('share',package_name, 'config'), glob('config/*.yaml')),
+        #(os.path.join('share',package_name, 'config'), glob('config/*.yaml')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -35,7 +35,7 @@ setup(
             'serial_bridgeEKF = mecanum_bridge.serial_bridgeEKF:main',
             'joy_mecanum = mecanum_bridge.joy_mecanum:main',
             'teleop_mecanum = mecanum_bridge.teleop_mecanum:main',
-            'trajectory_node = mecanum_bridge.trajectory_node:main',
+            #'trajectory_node = mecanum_bridge.trajectory_node:main',
         ],
     },
 )
