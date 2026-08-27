@@ -13,7 +13,7 @@ amcl:
 
     # Modelo del robot
     robot_model_type: nav2_amcl::DifferentialMotionModel
-
+    #robot_model_type: nav2_amcl::OmniMotionModel
     # Frecuencia
     update_min_d: 0.05
     update_min_a: 0.05
