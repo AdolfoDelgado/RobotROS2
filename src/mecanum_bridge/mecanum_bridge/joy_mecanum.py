@@ -1,254 +1,362 @@
 #!/usr/bin/env python3
 
 import rclpy
-from geometry_msgs.msg import Twist
 from rclpy.node import Node
+
 from sensor_msgs.msg import Joy
+from geometry_msgs.msg import Twist
 
 
 class JoyMecanum(Node):
-    """
-    Convierte /joy en velocidades para un robot mecanum.
 
-    Mapeo predeterminado tipo Xbox:
-      stick izquierdo vertical   -> vx
-      stick izquierdo horizontal -> vy
-      stick derecho horizontal   -> wz
-      RT                          -> aumenta el nivel de velocidad
-      LT                          -> disminuye el nivel de velocidad
+    def __init__(self):
+        super().__init__('joy_mecanum')
 
-    RT y LT cambian el nivel una sola vez por cada pulsación. Esto evita que
-    el nivel cambie muchas veces mientras el gatillo permanece presionado.
-    """
+        # ==========================================================
+        # PARAMETROS
+        # ==========================================================
 
-    def __init__(self) -> None:
-        super().__init__("joy_mecanum")
+        self.declare_parameter('joy_topic', '/joy')
+        self.declare_parameter('cmd_vel_topic', '/cmd_vel_joy')
 
-        # Ejes usuales del driver joy para un mando Xbox.
-        self.declare_parameter("axis_vx", 1)
-        self.declare_parameter("axis_vy", 0)
-        self.declare_parameter("axis_wz", 3)
-        self.declare_parameter("axis_lt", 2)
-        self.declare_parameter("axis_rt", 5)
+        # Ejes
+        self.declare_parameter('axis_vx', 1)
+        self.declare_parameter('axis_vy', 0)
+        self.declare_parameter('axis_wz', 3)
 
-        # Algunos mandos reportan los gatillos sueltos en +1 y presionados en -1.
-        self.declare_parameter("trigger_released_value", 1.0)
-        self.declare_parameter("trigger_pressed_value", -1.0)
-        self.declare_parameter("trigger_threshold", 0.65)
+        # Escalas
+        self.declare_parameter('scale_vx', 0.35)
+        self.declare_parameter('scale_vy', 0.35)
+        self.declare_parameter('scale_wz', 0.8)
 
-        self.declare_parameter("max_vx", 0.40)
-        self.declare_parameter("max_vy", 0.40)
-        self.declare_parameter("max_wz", 1.00)
+        # Deadzone
+        self.declare_parameter('deadzone', 0.08)
 
-        self.declare_parameter("speed_levels", [0.20, 0.35, 0.50, 0.70, 1.00])
-        self.declare_parameter("initial_speed_level", 1)
+        # Boton A
+        self.declare_parameter('enable_button', 0)
 
-        self.declare_parameter("deadzone", 0.08)
-        self.declare_parameter("publish_rate", 30.0)
-        self.declare_parameter("joy_timeout", 0.5)
-        self.declare_parameter("output_topic", "/cmd_vel_joy")
+        # Gatillos
+        self.declare_parameter('rt_axis', 5)
+        self.declare_parameter('lt_axis', 4)
 
-        self.axis_vx = int(self.get_parameter("axis_vx").value)
-        self.axis_vy = int(self.get_parameter("axis_vy").value)
-        self.axis_wz = int(self.get_parameter("axis_wz").value)
-        self.axis_lt = int(self.get_parameter("axis_lt").value)
-        self.axis_rt = int(self.get_parameter("axis_rt").value)
+        # Incremento de velocidad
+        self.declare_parameter('speed_step', 0.05)
 
-        self.trigger_released = float(
-            self.get_parameter("trigger_released_value").value
-        )
-        self.trigger_pressed = float(
-            self.get_parameter("trigger_pressed_value").value
-        )
-        self.trigger_threshold = float(
-            self.get_parameter("trigger_threshold").value
-        )
+        # ==========================================================
+        # OBTENER PARAMETROS
+        # ==========================================================
 
-        self.max_vx = float(self.get_parameter("max_vx").value)
-        self.max_vy = float(self.get_parameter("max_vy").value)
-        self.max_wz = float(self.get_parameter("max_wz").value)
+        joy_topic = self.get_parameter('joy_topic').value
+        cmd_vel_topic = self.get_parameter('cmd_vel_topic').value
 
-        self.speed_levels = [
-            float(value)
-            for value in self.get_parameter("speed_levels").value
-        ]
+        self.axis_vx = self.get_parameter('axis_vx').value
+        self.axis_vy = self.get_parameter('axis_vy').value
+        self.axis_wz = self.get_parameter('axis_wz').value
 
-        initial_level = int(
-            self.get_parameter("initial_speed_level").value
-        )
-        self.speed_level = max(
-            0,
-            min(initial_level, len(self.speed_levels) - 1),
-        )
+        self.scale_vx = self.get_parameter('scale_vx').value
+        self.scale_vy = self.get_parameter('scale_vy').value
+        self.scale_wz = self.get_parameter('scale_wz').value
 
-        self.deadzone = float(self.get_parameter("deadzone").value)
-        self.joy_timeout = float(
-            self.get_parameter("joy_timeout").value
-        )
-        publish_rate = float(
-            self.get_parameter("publish_rate").value
-        )
-        output_topic = str(
-            self.get_parameter("output_topic").value
-        )
+        self.deadzone = self.get_parameter('deadzone').value
 
-        self.latest_joy = None
-        self.last_joy_time = None
+        self.enable_button = self.get_parameter('enable_button').value
 
-        # Bloqueos para que cada gatillo produzca un solo cambio por pulsación.
-        self.rt_latched = False
-        self.lt_latched = False
+        self.rt_axis = self.get_parameter('rt_axis').value
+        self.lt_axis = self.get_parameter('lt_axis').value
 
-        self.joy_sub = self.create_subscription(
-            Joy,
-            "/joy",
-            self.joy_callback,
-            10,
-        )
+        self.speed_step = self.get_parameter('speed_step').value
+
+        # ==========================================================
+        # ESTADO
+        # ==========================================================
+
+        self.enabled = False
+
+        # Multiplicador de velocidad
+        self.speed_multiplier = 1.0
+
+        # Último comando enviado
+        self.last_vx = 0.0
+        self.last_vy = 0.0
+        self.last_wz = 0.0
+
+        # Estado anterior del botón A
+        self.last_enable_state = False
+
+        # Últimos valores de los gatillos
+        self.last_rt = None
+        self.last_lt = None
+
+        # ==========================================================
+        # ROS
+        # ==========================================================
 
         self.cmd_pub = self.create_publisher(
             Twist,
-            output_topic,
-            10,
+            cmd_vel_topic,
+            10
         )
 
-        self.timer = self.create_timer(
-            1.0 / publish_rate,
-            self.publish_cmd_vel,
+        self.joy_sub = self.create_subscription(
+            Joy,
+            joy_topic,
+            self.joy_callback,
+            10
         )
 
         self.get_logger().info(
-            f"Joystick iniciado: /joy -> {output_topic}"
+            f'Joystick iniciado: {joy_topic} -> {cmd_vel_topic}'
         )
-        self.log_speed_level()
 
-    @staticmethod
-    def valid_index(values, index: int) -> bool:
-        return 0 <= index < len(values)
+    # ==============================================================
+    # DEADZONE
+    # ==============================================================
 
-    def apply_deadzone(self, value: float) -> float:
+    def apply_deadzone(self, value):
+
         if abs(value) < self.deadzone:
             return 0.0
+
         return value
 
-    def trigger_amount(self, raw_value: float) -> float:
-        """
-        Convierte el eje del gatillo a 0.0..1.0.
+    # ==============================================================
+    # PUBLICAR VELOCIDAD
+    # ==============================================================
 
-        Funciona tanto si el mando usa:
-          suelto=+1, presionado=-1
-        como si se cambian esos valores mediante parámetros.
-        """
-        span = self.trigger_pressed - self.trigger_released
-        if abs(span) < 1.0e-9:
-            return 0.0
+    def publish_velocity(self, vx, vy, wz):
 
-        amount = (raw_value - self.trigger_released) / span
-        return max(0.0, min(1.0, amount))
-
-    def joy_callback(self, msg: Joy) -> None:
-        self.latest_joy = msg
-        self.last_joy_time = self.get_clock().now()
-
-        if not self.valid_index(msg.axes, self.axis_rt):
-            return
-        if not self.valid_index(msg.axes, self.axis_lt):
-            return
-
-        rt_pressed = (
-            self.trigger_amount(msg.axes[self.axis_rt])
-            >= self.trigger_threshold
-        )
-        lt_pressed = (
-            self.trigger_amount(msg.axes[self.axis_lt])
-            >= self.trigger_threshold
-        )
-
-        # Si ambos están presionados, no cambia el nivel.
-        if rt_pressed and lt_pressed:
-            self.rt_latched = True
-            self.lt_latched = True
-            return
-
-        if rt_pressed and not self.rt_latched:
-            self.speed_level = min(
-                self.speed_level + 1,
-                len(self.speed_levels) - 1,
-            )
-            self.log_speed_level()
-
-        if lt_pressed and not self.lt_latched:
-            self.speed_level = max(self.speed_level - 1, 0)
-            self.log_speed_level()
-
-        self.rt_latched = rt_pressed
-        self.lt_latched = lt_pressed
-
-    def log_speed_level(self) -> None:
-        factor = self.speed_levels[self.speed_level]
-        self.get_logger().info(
-            f"Nivel {self.speed_level + 1}/{len(self.speed_levels)}: "
-            f"{factor * 100:.0f}%"
-        )
-
-    def publish_stop(self) -> None:
-        self.cmd_pub.publish(Twist())
-
-    def publish_cmd_vel(self) -> None:
-        if self.latest_joy is None or self.last_joy_time is None:
-            self.publish_stop()
-            return
-
-        elapsed = (
-            self.get_clock().now() - self.last_joy_time
-        ).nanoseconds / 1.0e9
-
-        # Seguridad: si se desconecta el mando, manda cero.
-        if elapsed > self.joy_timeout:
-            self.publish_stop()
-            return
-
-        joy = self.latest_joy
-        required_axes = [self.axis_vx, self.axis_vy, self.axis_wz]
-
-        if not all(
-            self.valid_index(joy.axes, index)
-            for index in required_axes
+        # Si exactamente no cambió, no enviamos nada
+        if (
+            vx == self.last_vx and
+            vy == self.last_vy and
+            wz == self.last_wz
         ):
-            self.get_logger().warning(
-                "Los índices de movimiento no existen en /joy",
-                throttle_duration_sec=2.0,
-            )
-            self.publish_stop()
             return
 
-        factor = self.speed_levels[self.speed_level]
+        msg = Twist()
 
-        vx_input = self.apply_deadzone(joy.axes[self.axis_vx])
-        vy_input = self.apply_deadzone(joy.axes[self.axis_vy])
-        wz_input = self.apply_deadzone(joy.axes[self.axis_wz])
+        msg.linear.x = vx
+        msg.linear.y = vy
+        msg.angular.z = wz
 
-        cmd = Twist()
-        cmd.linear.x = self.max_vx * factor * vx_input
-        cmd.linear.y = self.max_vy * factor * vy_input
-        cmd.angular.z = self.max_wz * factor * wz_input
+        self.cmd_pub.publish(msg)
 
-        self.cmd_pub.publish(cmd)
+        self.last_vx = vx
+        self.last_vy = vy
+        self.last_wz = wz
+
+    # ==============================================================
+    # STOP
+    # ==============================================================
+
+    def publish_stop(self):
+
+        # Si ya estamos en cero no hace falta volver a enviarlo
+        if (
+            self.last_vx == 0.0 and
+            self.last_vy == 0.0 and
+            self.last_wz == 0.0
+        ):
+            return
+
+        msg = Twist()
+
+        msg.linear.x = 0.0
+        msg.linear.y = 0.0
+        msg.angular.z = 0.0
+
+        self.cmd_pub.publish(msg)
+
+        self.last_vx = 0.0
+        self.last_vy = 0.0
+        self.last_wz = 0.0
+
+        self.get_logger().info('STOP')
+
+    # ==============================================================
+    # CALLBACK JOYSTICK
+    # ==============================================================
+
+    def joy_callback(self, msg):
+
+        # ----------------------------------------------------------
+        # BOTON A
+        # ----------------------------------------------------------
+
+        if self.enable_button >= len(msg.buttons):
+            self.get_logger().error(
+                f'El botón {self.enable_button} no existe'
+            )
+            return
+
+        a_pressed = msg.buttons[self.enable_button] == 1
+
+        # ----------------------------------------------------------
+        # A FUE PRESIONADA
+        # ----------------------------------------------------------
+
+        if a_pressed and not self.last_enable_state:
+
+            self.enabled = True
+
+            self.get_logger().info('CONTROL HABILITADO')
+
+        # ----------------------------------------------------------
+        # A FUE SOLTADA
+        # ----------------------------------------------------------
+
+        if not a_pressed and self.last_enable_state:
+
+            self.enabled = False
+
+            # STOP UNA SOLA VEZ
+            self.publish_stop()
+
+            self.get_logger().info('CONTROL DESHABILITADO')
+
+        self.last_enable_state = a_pressed
+
+        # ----------------------------------------------------------
+        # SI A NO ESTA PRESIONADA
+        # ----------------------------------------------------------
+
+        if not self.enabled:
+            return
+
+        # ==========================================================
+        # EJES
+        # ==========================================================
+
+        if self.axis_vx >= len(msg.axes):
+            return
+
+        if self.axis_vy >= len(msg.axes):
+            return
+
+        if self.axis_wz >= len(msg.axes):
+            return
+
+        vx_axis = self.apply_deadzone(
+            msg.axes[self.axis_vx]
+        )
+
+        vy_axis = self.apply_deadzone(
+            msg.axes[self.axis_vy]
+        )
+
+        wz_axis = self.apply_deadzone(
+            msg.axes[self.axis_wz]
+        )
+
+        # ==========================================================
+        # GATILLOS
+        # ==========================================================
+
+        rt = None
+        lt = None
+
+        if self.rt_axis < len(msg.axes):
+            rt = msg.axes[self.rt_axis]
+
+        if self.lt_axis < len(msg.axes):
+            lt = msg.axes[self.lt_axis]
+
+        # ----------------------------------------------------------
+        # RT
+        # ----------------------------------------------------------
+
+        if rt is not None:
+
+            if self.last_rt is None:
+                self.last_rt = rt
+
+            elif abs(rt - self.last_rt) > 0.01:
+
+                # RT aumenta velocidad
+                if rt > self.last_rt:
+
+                    self.speed_multiplier += self.speed_step
+
+                self.last_rt = rt
+
+        # ----------------------------------------------------------
+        # LT
+        # ----------------------------------------------------------
+
+        if lt is not None:
+
+            if self.last_lt is None:
+                self.last_lt = lt
+
+            elif abs(lt - self.last_lt) > 0.01:
+
+                # LT disminuye velocidad
+                if lt > self.last_lt:
+
+                    self.speed_multiplier -= self.speed_step
+
+                self.last_lt = lt
+
+        # Limitar velocidad
+        self.speed_multiplier = max(
+            0.1,
+            min(self.speed_multiplier, 2.0)
+        )
+
+        # ==========================================================
+        # VELOCIDADES
+        # ==========================================================
+
+        vx = (
+            vx_axis *
+            self.scale_vx *
+            self.speed_multiplier
+        )
+
+        vy = (
+            vy_axis *
+            self.scale_vy *
+            self.speed_multiplier
+        )
+
+        wz = (
+            wz_axis *
+            self.scale_wz *
+            self.speed_multiplier
+        )
+
+        # ==========================================================
+        # PUBLICAR SOLO SI CAMBIO
+        # ==========================================================
+
+        self.publish_velocity(
+            vx,
+            vy,
+            wz
+        )
 
 
-def main(args=None) -> None:
+def main(args=None):
+
     rclpy.init(args=args)
+
     node = JoyMecanum()
 
     try:
         rclpy.spin(node)
+
     except KeyboardInterrupt:
         pass
+
     finally:
+
+        # Intentar detener el robot al cerrar el nodo
         node.publish_stop()
+
         node.destroy_node()
+
         rclpy.shutdown()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
