@@ -29,14 +29,6 @@ def generate_launch_description():
         ],
     )
 
-    # RViz
-    #rviz_node = launch_ros.actions.Node(
-    #    package='rviz2',
-    #    executable='rviz2',
-    #    name='rviz2',
-    #    output='screen',
-    #)
-
     # LiDAR
     lidar_node = launch_ros.actions.Node(
         package='ldlidar_stl_ros2',
@@ -58,6 +50,5 @@ def generate_launch_description():
 
     return launch.LaunchDescription([
         robot_state_publisher_node,
-        #rviz_node,
         lidar_node,
     ])

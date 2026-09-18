@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-
 import math
-
 import rclpy
 from geometry_msgs.msg import TransformStamped, Twist
 from nav_msgs.msg import Odometry
