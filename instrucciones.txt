@@ -1,24 +1,39 @@
+/// ESTO FUNCIONA PARA CONECTAR LA RASPBERRY PI 3B+ POR SSH
 ssh mecanum@robotpi.local
 
-ros2 run joy joy_node
 
+/// ESTOS NODOS SON LOS QUE SE LANZAN PARA MOVER EL ROBOT CON EL JOYSTIC
+ros2 run joy joy_node
 ros2 run mecanum_bridge joy_mecanum
 
+
+/// ESTE LAUNCH ES PARA LANZAR RVIZ, EN LA LAPTOP
 ros2 launch mecanum_bridge display.launch.py
 
 
-
-
+/// ESTE NODO ES EL PRINCIPAL PARA LEER EL ESP32
 ros2 run mecanum_bridge serial_bridgeEKF
 
+
+/// ESTE LAUNCH LANZA LO QUE ES EL LIDAR PARA ESCANEAR EL ENTORNO
 ros2 launch mecanum_bridge ld500.launch.py 
 
+
+/// ESTE NODO ES EL QUE HACE LA FUNCION DEL EKF ES UN FILTRO QUE FUSIONA LA ODOMETRIA CON EL IMU
 ros2 run robot_localization ekf_node \
   --ros-args \
   --params-file ~/omnidireccional_ws/src/RobotROS2/src/mecanum_bridge/config/ekf.yaml
 
 
+/// ESTE NODO LANZA LO QUE ES EL SLAM O MAPEO, CON ESTO PUEDO HACER UN MAPEO DE SU ENTORNO, LA SIGUIENTE LINEA ES PARA GUARDAR EL MAPA
 ros2 launch mecanum_bridge slam.launch.py
-
-
 ros2 run nav2_map_server map_saver_cli -f ~/maps/cuarto
+
+
+/// ES EL LAUNCH PARA INICIALIZAR LA LOCALIZACION  
+ros2 launch mecanum_bridge localization.launch.py
+
+
+///ESTO ES PARA DARLE UNA POSICION AL ROBOT EN /MAP  
+ros2 topic pub --once /initialpose geometry_msgs/msg/PoseWithCovarianceStamped \
+"{header: {frame_id: 'map'}, pose: {pose: {position: {x: 0.0, y: 0.0, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}}}}"
